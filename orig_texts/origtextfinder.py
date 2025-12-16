@@ -107,7 +107,7 @@ class OrigTextFinder:
 
             text['orig_texts'] = get_dicts_with_urls(urls)
 
-        print(f'Всего ссылок, найденных в Google:{num_of_links}')
+        print(f'Всего ссылок, найденных в Google:{num_of_links}') #235
         with open(txt_path, 'w', encoding='utf-8') as f:
             json.dump(debunk, f, ensure_ascii=False, indent=4)
 
@@ -156,7 +156,7 @@ class OrigTextFinder:
 
             text['orig_texts'] = get_dicts_with_urls(urls)
 
-        print(f'Всего ссылок, найденных в Яндекс:{num_of_links}')
+        print(f'Всего ссылок, найденных в Яндекс:{num_of_links}') #571
         with open(txt_path, 'w', encoding='utf-8') as f:
             json.dump(debunk, f, ensure_ascii=False, indent=4)
 
@@ -194,7 +194,7 @@ class OrigTextFinder:
 
             text['orig_texts'] = get_dicts_with_urls(urls)
 
-        print(f'Всего ссылок, найденных в Tavily:{num_of_links}')
+        print(f'Всего ссылок, найденных в Tavily:{num_of_links}') #141
         with open(txt_path, 'w', encoding='utf-8') as f:
             json.dump(debunk, f, ensure_ascii=False, indent=4)
 
@@ -238,20 +238,17 @@ class OrigTextFinder:
                 text['orig_texts'] = orig_wcontent
                 json.dump(debunk, f, ensure_ascii=False, indent=4)
 
-                print(f'Найдено заголовков: {found_titles}')
-                print(f'Найдено текстов: {found_texts}')
-                print(f'Найдено дат публикаций: {found_dates}')
-
-        # with open(txt_path, 'w', encoding='utf-8') as f:
-        #     json.dump(debunk, f, ensure_ascii=False, indent=4)
+                print(f'Найдено заголовков: {found_titles}') #364
+                print(f'Найдено текстов: {found_texts}') #333
+                print(f'Найдено дат публикаций: {found_dates}') #137
 
 if __name__ == '__main__':
 
     finder = OrigTextFinder()
-    # finder.get_quotes('unmarked_dataset.json', 'quote_markers.txt', 'regexps.txt', 'regexps_wquotemarkers.txt')
-    # finder.get_google_urls('unmarked_dataset.json', 'blacklist_urls.json', 1)
-    # finder.get_yandex_urls('unmarked_dataset.json', 'blacklist_urls.json', 20)
-    # finder.get_tavily_urls('unmarked_dataset.json', 'blacklist_urls.json')
+    finder.get_quotes('unmarked_dataset.json', 'quote_markers.txt', 'regexps.txt', 'regexps_wquotemarkers.txt')
+    finder.get_google_urls('unmarked_dataset.json', 'blacklist_urls.json', 1)
+    finder.get_yandex_urls('unmarked_dataset.json', 'blacklist_urls.json', 20)
+    finder.get_tavily_urls('unmarked_dataset.json', 'blacklist_urls.json')
     finder.get_content_from_urls('unmarked_dataset.json')
 
 

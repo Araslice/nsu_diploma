@@ -97,6 +97,11 @@ class LLMMarker:
             json.dump(texts, f, ensure_ascii=False, indent=4)
 
     
+if __name__ == '__main__':
+    unmarked_dataset_path = os.getenv('UNMARKED_DATASET_PATH')
+    fake_marker = LLMMarker(unmarked_dataset_path)
+    fake_marker.mark_dataset('system_prompt.txt', 'marked_texts', 1000)
+    fake_marker.from_txtfiles_tojson('marked_texts')
 
         
 

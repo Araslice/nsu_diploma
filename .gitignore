@@ -1,2 +1,4 @@
 orig_texts/.env
 orig_texts/__pycache__
+llm_marked_texts/.env
+llm_marked_texts/marked_texts

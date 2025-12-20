@@ -2,6 +2,7 @@ import json
 from dotenv import load_dotenv
 from tqdm import tqdm
 import os
+from or_llm import get_llm_response
 
 load_dotenv()
 
@@ -39,14 +40,14 @@ class LLMMarker:
                     prev_marked_texts += 1
                     continue
 
-                if max_text_len == 0:
-                    text_to_mark = orig_text['text']
-                else:
-                    text_to_mark = orig_text['text'][:max_text_len]
-
                 try:
-                    result = 'Something'
-                    #TODO: add LLM
+                    if max_text_len == 0:
+                        text_to_mark = orig_text['text']
+                        result = get_llm_response(system_prompt, text_to_mark, op_text['text'])
+                    else:
+                        text_to_mark = orig_text['text'][:max_text_len]
+                        result = get_llm_response(system_prompt, text_to_mark, op_text['text'], max_text_len)
+
                     new_marked_texts += 1
                 except Exception as e:
                     print(f'Ошибка в {j}-ом тексте {i}-го текста-опровержения: {e}')
@@ -101,7 +102,7 @@ if __name__ == '__main__':
     unmarked_dataset_path = os.getenv('UNMARKED_DATASET_PATH')
     fake_marker = LLMMarker(unmarked_dataset_path)
     fake_marker.mark_dataset('system_prompt.txt', 'marked_texts', 1000)
-    fake_marker.from_txtfiles_tojson('marked_texts')
+    # fake_marker.from_txtfiles_tojson('marked_texts')
 
         
 

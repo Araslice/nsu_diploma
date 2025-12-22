@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from tqdm import tqdm
 import os
 from or_llm import get_llm_response
+import random
 
 load_dotenv()
 
@@ -36,37 +37,38 @@ class LLMMarker:
             for orig_text in tqdm(op_text['orig_texts']):
 
                 output_path = f'{output_folder}\op{i}_txt{j}.txt'
-                if os.path.exists(output_path):
+                if os.path.exists(output_path) == False:
+
+                    try:
+                        if max_text_len == 0:
+                            text_to_mark = orig_text['text']
+                            result = get_llm_response(system_prompt, text_to_mark, op_text['text'])
+                        else:
+                            text_to_mark = orig_text['text'][:max_text_len]
+                            result = get_llm_response(system_prompt, text_to_mark, op_text['text'], max_text_len)
+
+                        new_marked_texts += 1
+                    except Exception as e:
+                        print(f'Ошибка в {j}-ом тексте {i}-го текста-опровержения: {e}')
+                        result = 'Не удалось разметить'
+
+                    with open(output_path, 'w', encoding='utf-8') as f:
+                        f.write(result)
+
+                else:
                     prev_marked_texts += 1
-                    continue
-
-                try:
-                    if max_text_len == 0:
-                        text_to_mark = orig_text['text']
-                        result = get_llm_response(system_prompt, text_to_mark, op_text['text'])
-                    else:
-                        text_to_mark = orig_text['text'][:max_text_len]
-                        result = get_llm_response(system_prompt, text_to_mark, op_text['text'], max_text_len)
-
-                    new_marked_texts += 1
-                except Exception as e:
-                    print(f'Ошибка в {j}-ом тексте {i}-го текста-опровержения: {e}')
-                    result = 'Не удалось разметить'
-
-                with open(output_path, 'w', encoding='utf-8') as f:
-                    f.write(result)
 
                 j += 1
 
             i += 1
 
-        print(f'Ранее размеченных текстов: {prev_marked_texts}\nНовых размеченных текстов: {new_marked_texts}')
+        print(f'Ранее размеченных текстов: {prev_marked_texts}\nНовых размеченных текстов: {new_marked_texts}') #331 текст
 
-    def from_txtfiles_tojson(self, folder_wfiles):
+    def from_txtfiles_tojson(self, folder_wfiles, needs_shuffle=True):
 
         '''
         Собирает все размеченные тексты в один json-файл.
-        На вход подаётся папка с размеченными текстами. 
+        На вход подаётся папка с размеченными текстами и надодобность в перемешивании текстов. 
         На выходе генерируется единый json-файл с удачно (при работе LLM не возникало ошибок) размеченными текстами
         '''
 
@@ -78,21 +80,20 @@ class LLMMarker:
 
         for op_text in unmarked_dataset:
 
-            for j in tqdm(range(len(op_text['orig_texts']))):
+            for j in range(len(op_text['orig_texts'])):
 
                 file_path = f'{folder_wfiles}\op{i}_txt{j}.txt'
-                if os.path.exists(file_path) == False:
-                    continue
+                if os.path.exists(file_path):
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        text = f.read()
 
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    text = f.read()
-
-                if text == 'Не удалось разметить':
-                    continue
-
-                texts.append(text)
+                    if text != 'Не удалось разметить':
+                        texts.append(text)
 
             i += 1
+
+        if needs_shuffle:
+            random.shuffle(texts)
 
         with open('all_marked_texts.json', 'w', encoding='utf-8') as f:
             json.dump(texts, f, ensure_ascii=False, indent=4)
@@ -100,9 +101,11 @@ class LLMMarker:
     
 if __name__ == '__main__':
     unmarked_dataset_path = os.getenv('UNMARKED_DATASET_PATH')
+    system_prompt_path = os.getenv('SYSTEM_PROMPT_PATH')
+    output_folder = os.getenv('OUTPUT_FOLDER_PATH')
     fake_marker = LLMMarker(unmarked_dataset_path)
-    fake_marker.mark_dataset('system_prompt.txt', 'marked_texts', 1000)
-    # fake_marker.from_txtfiles_tojson('marked_texts')
+    # fake_marker.mark_dataset(system_prompt_path, output_folder, 1000)
+    fake_marker.from_txtfiles_tojson(output_folder)
 
         
 
